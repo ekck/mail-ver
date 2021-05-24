@@ -4,6 +4,7 @@
 #################
 #### imports ####
 #################
+import datetime
 
 from flask import render_template, Blueprint, url_for, \
     redirect, flash, request
@@ -14,7 +15,7 @@ from project.models import User
 # from project.email import send_email
 from project import db, bcrypt
 from .forms import LoginForm, RegisterForm, ChangePasswordForm
-
+from project.token import generate_confirmation_token, confirm_token
 
 ################
 #### config ####
@@ -38,6 +39,8 @@ def register():
     )
         db.session.add(user)
         db.session.commit()
+
+        token = generate_confirmation_token(user.email)
 
         login_user(user)
         flash('You registered and are now logged in. Welcome!', 'success')
@@ -86,3 +89,21 @@ def profile():
             flash('Password change was unsuccessful.', 'danger')
             return redirect(url_for('user.profile'))
     return render_template('user/profile.html', form=form)
+
+@user_blueprint.route('/confirm/<token>')
+@login_required
+def confirm_email(token):
+    try:
+        email = confirm_token(token)
+    except:
+        flash('The confirmation link is invalid or has expired.', 'danger')
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.confirmed:
+        flash('Account already confirmed. Please login.', 'success')
+    else:
+        user.confirmed = True
+        user.confirmed_on = datetime.datetime.now()
+        db.session.add(user)
+        db.session.commit()
+        flash('You have confirmed your account. Thanks!', 'success')
+    return redirect(url_for('main.home'))
