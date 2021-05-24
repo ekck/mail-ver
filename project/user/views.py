@@ -16,6 +16,7 @@ from project.models import User
 from project import db, bcrypt
 from .forms import LoginForm, RegisterForm, ChangePasswordForm
 from project.token import generate_confirmation_token, confirm_token
+from project.email import send_email
 
 ################
 #### config ####
@@ -33,14 +34,18 @@ def register():
     form = RegisterForm(request.form)
     if form.validate_on_submit():
         user = User(
-    email=form.email.data,
-    password=form.password.data,
-    confirmed=False
-    )
+            email=form.email.data,
+            password=form.password.data,
+            confirmed=False
+        )
         db.session.add(user)
         db.session.commit()
 
         token = generate_confirmation_token(user.email)
+        confirm_url = url_for('user.confirm_email', token=token, _external=True)
+        html = render_template('user/activate.html', confirm_url=confirm_url)
+        subject = "Please confirm your email"
+        send_email(user.email, subject, html)
 
         login_user(user)
         flash('You registered and are now logged in. Welcome!', 'success')
