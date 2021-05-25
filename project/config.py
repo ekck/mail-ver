@@ -16,7 +16,7 @@ class BaseConfig(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # mail settings
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp.goodlemail.com'
     MAIL_PORT = 465
     MAIL_USE_TLS = False
     MAIL_USE_SSL = True

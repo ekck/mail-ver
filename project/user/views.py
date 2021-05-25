@@ -48,9 +48,9 @@ def register():
         send_email(user.email, subject, html)
 
         login_user(user)
-        flash('You registered and are now logged in. Welcome!', 'success')
 
-        return redirect(url_for('main.home'))
+        flash('A confirmation email has been sent via email.', 'success')
+        return redirect(url_for("main.home"))
 
     return render_template('user/register.html', form=form)
 
